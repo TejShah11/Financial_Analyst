@@ -25,7 +25,14 @@ logging.basicConfig(
     format="%(levelname)-7s | %(name)s | %(message)s",
 )
 
-TEST_QUERY = "What was the operating margin in Q4 FY26?"
+DEFAULT_QUERY = "What was the operating margin in Q4 FY26?"
+
+
+def _resolve_query() -> str:
+    """Use a question passed on the command line, else the default query."""
+    if len(sys.argv) > 1:
+        return " ".join(sys.argv[1:]).strip()
+    return DEFAULT_QUERY
 
 
 def _preview(value: object, limit: int = 600) -> str:
@@ -36,12 +43,13 @@ def _preview(value: object, limit: int = 600) -> str:
 
 def main() -> None:
     """Stream the graph for the test query and print each node's output."""
+    query = _resolve_query()
     print("=" * 70)
-    print(f"QUERY: {TEST_QUERY}")
+    print(f"QUERY: {query}")
     print("=" * 70)
 
     initial_state = {
-        "messages": [HumanMessage(content=TEST_QUERY)],
+        "messages": [HumanMessage(content=query)],
         "context": "",
         "intent": "",
         "errors": "",
