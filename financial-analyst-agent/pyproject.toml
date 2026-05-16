@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "chromadb>=1.5.9",
+    "fastapi>=0.136.1",
+    "fpdf2>=2.8.7",
     "langchain-chroma>=1.1.0",
     "langchain-experimental>=0.4.1",
     "langchain-google-genai>=4.2.2",
@@ -13,10 +15,14 @@ dependencies = [
     "langchain-text-splitters>=1.1.2",
     "langgraph>=1.2.0",
     "llama-parse>=0.6.94",
+    "markdown>=3.10.2",
+    "openpyxl>=3.1.5",
     "pandas>=3.0.3",
+    "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
     "python-dotenv>=1.2.2",
     "sentence-transformers>=5.5.0",
     "tabulate>=0.10.0",
+    "uvicorn>=0.47.0",
     "xlrd>=2.0.2",
 ]
