@@ -170,14 +170,25 @@ def drafter_node(state: FinancialAgentState) -> dict[str, Any]:
     context = state.get("context") or "(no supporting evidence was retrieved)"
     errors = state.get("errors") or ""
 
-    system_messages = [SystemMessage(content=ANALYST_DRAFTER_PROMPT.format(context=context))]
+    # Build the analyst prompt, then ONLY the user's turns. Prior AI drafts are
+    # deliberately excluded — replaying them would end the message list on an
+    # assistant turn, and the model would then return an empty response.
+    llm_messages: list = [
+        SystemMessage(content=ANALYST_DRAFTER_PROMPT.format(context=context))
+    ]
+    llm_messages += [m for m in state["messages"] if isinstance(m, HumanMessage)]
+
     if errors:
-        # Feed the Critic's feedback back so the rewrite fixes the exact issues.
-        system_messages.append(
-            SystemMessage(content=f"CRITIC FEEDBACK on your previous draft:\n{errors}")
+        # Deliver the Critic's feedback as the final (human) turn so the model
+        # is prompted to produce a corrected answer rather than an empty one.
+        llm_messages.append(
+            HumanMessage(
+                content="Your previous draft failed fact-check. Correct these "
+                f"specific issues and write the full answer again:\n{errors}"
+            )
         )
 
-    response = _get_llm().invoke(system_messages + list(state["messages"]))
+    response = _get_llm().invoke(llm_messages)
     revisions = state.get("revisions", 0) + 1
     logger.info("Drafter produced draft #%d.", revisions)
     return {"messages": [response], "revisions": revisions}
