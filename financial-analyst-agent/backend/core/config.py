@@ -51,6 +51,10 @@ class Settings(BaseSettings):
         default=Path("./data/chroma_db"),
         description="Persistent ChromaDB store (SQLite + Parquet segments).",
     )
+    EXPORTS_DIR: Path = Field(
+        default=Path("./data/exports"),
+        description="Generated downloadable artifacts (Excel / PDF reports).",
+    )
 
 
 @lru_cache(maxsize=1)
