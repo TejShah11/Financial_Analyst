@@ -1,4 +1,11 @@
 /.venv/
-/__pycache__/
+__pycache__/
 /.env
 *.pyc
+
+# Data: keep the directory layout, exclude payloads
+/data/raw/*
+/data/processed/*
+/data/exports/*
+/data/chroma_db/
+!/data/**/.gitkeep
