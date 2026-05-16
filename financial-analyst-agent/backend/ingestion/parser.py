@@ -19,8 +19,9 @@ from backend.core.config import get_settings
 logger = logging.getLogger(__name__)
 
 # Domain-specific guidance steers LlamaParse toward faithful table reproduction
-# instead of prose summarisation.
-_PARSING_INSTRUCTION = (
+# instead of prose summarisation. Passed via ``system_prompt_append`` — the
+# legacy ``parsing_instruction`` argument is deprecated.
+_SYSTEM_PROMPT_APPEND = (
     "This is an Infosys IFRS financial document (an annual report or a "
     "quarterly earnings press release). Reproduce every financial table "
     "exactly as a GitHub-flavored Markdown table, preserving all row and "
@@ -50,7 +51,7 @@ def extract_financial_pdf(file_path: str) -> str:
     parser = LlamaParse(
         api_key=settings.LLAMA_CLOUD_API_KEY,
         result_type="markdown",
-        parsing_instruction=_PARSING_INSTRUCTION,
+        system_prompt_append=_SYSTEM_PROMPT_APPEND,
         verbose=True,
     )
 

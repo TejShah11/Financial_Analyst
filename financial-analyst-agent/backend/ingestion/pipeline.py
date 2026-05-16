@@ -98,6 +98,10 @@ def chunk_markdown(markdown_text: str, base_metadata: dict[str, str]) -> list[Do
     )
     child_chunks = recursive_splitter.split_documents(parent_sections)
 
+    # Drop empty / whitespace-only chunks: the embedding API rejects empty
+    # content with a 400 INVALID_ARGUMENT ("empty Part") error.
+    child_chunks = [c for c in child_chunks if c.page_content.strip()]
+
     for index, chunk in enumerate(child_chunks):
         # base_metadata wins over any colliding header keys; record chunk order.
         chunk.metadata = {**chunk.metadata, **base_metadata, "chunk_index": index}
@@ -133,12 +137,17 @@ def run_pipeline() -> int:
 
     for pdf_path in pdf_files:
         logger.info("=== Ingesting %s ===", pdf_path.name)
-        markdown = extract_financial_pdf(str(pdf_path))
-
-        # Persist the intermediate Markdown for inspection and re-runs.
         processed_path = processed_dir / f"{pdf_path.stem}.md"
-        processed_path.write_text(markdown, encoding="utf-8")
-        logger.info("Saved intermediate Markdown to %s.", processed_path)
+
+        # Reuse cached Markdown when present: LlamaParse is billed per page, so
+        # re-runs (e.g. after an embedding-quota failure) should not re-parse.
+        if processed_path.exists() and processed_path.stat().st_size > 0:
+            logger.info("Reusing cached Markdown %s (skipping LlamaParse).", processed_path)
+            markdown = processed_path.read_text(encoding="utf-8")
+        else:
+            markdown = extract_financial_pdf(str(pdf_path))
+            processed_path.write_text(markdown, encoding="utf-8")
+            logger.info("Saved intermediate Markdown to %s.", processed_path)
 
         chunks = chunk_markdown(markdown, _derive_metadata(pdf_path.name))
         retriever.add_documents(chunks)
