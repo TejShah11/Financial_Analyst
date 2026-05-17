@@ -55,6 +55,7 @@ def _query_backend(prompt: str) -> dict:
             "role": "assistant",
             "content": data.get("answer", "_(the backend returned no answer)_"),
             "intent": data.get("intent", ""),
+            "sources": data.get("sources", []),
         }
         # Backend returns a relative path; store the absolute URL for the link.
         file_url = data.get("file_url")
@@ -118,6 +119,9 @@ def main() -> None:
             with st.spinner("Analyzing financial data..."):
                 assistant_message = _query_backend(prompt)
             st.markdown(assistant_message["content"])
+            sources = assistant_message.get("sources", [])
+            if sources:
+                st.caption("📄 **Sources:** " + " · ".join(sources))
             file_url = assistant_message.get("file_url")
             if file_url:
                 filename = file_url.rstrip("/").rsplit("/", 1)[-1] or "file"

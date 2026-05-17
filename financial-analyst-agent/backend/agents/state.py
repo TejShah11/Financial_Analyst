@@ -28,6 +28,11 @@ class FinancialAgentState(TypedDict):
             an empty value means the draft passed.
         revisions: Number of Critic-triggered redraft cycles so far. Used purely
             as a loop guard so a persistently failing draft cannot spin forever.
+        sources: Deterministic list of document names every piece of evidence
+            for this turn was drawn from — the citation guarantee. Populated by
+            the retrieval / quantitative nodes, not by the LLM.
+        output_format: Delivery format chosen by the format node for this
+            answer — one of ``"text"``, ``"pdf"`` or ``"excel"``.
     """
 
     messages: Annotated[list, add_messages]
@@ -35,3 +40,5 @@ class FinancialAgentState(TypedDict):
     intent: str
     errors: str
     revisions: int
+    sources: list[str]
+    output_format: str

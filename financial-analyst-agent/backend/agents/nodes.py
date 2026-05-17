@@ -18,11 +18,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from backend.agents.prompts import (
     ANALYST_DRAFTER_PROMPT,
     CRITIC_PROMPT,
+    FORMAT_DECISION_PROMPT,
     ROUTER_PROMPT,
 )
 from backend.agents.state import FinancialAgentState
-from backend.agents.tools.pandas_tool import get_tabular_tool
-from backend.agents.tools.vector_tool import search_financial_docs
+from backend.agents.tools.pandas_tool import INVESTOR_XLS, STOCK_CSV, get_tabular_tool
+from backend.agents.tools.vector_tool import search_financial_context
 from backend.core.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -128,12 +129,17 @@ def query_planner_node(state: FinancialAgentState) -> dict[str, Any]:
 
 
 def retrieval_node(state: FinancialAgentState) -> dict[str, Any]:
-    """Track A — pull narrative context from the vector store."""
+    """Track A — pull narrative context (and its source documents) from the store."""
     user_query = _last_user_message(state)
     quarter = _extract_quarter(user_query)
-    context = search_financial_docs.invoke({"query": user_query, "quarter": quarter})
-    logger.info("Retrieval node produced %d chars of context.", len(context))
-    return {"context": context}
+    context, sources = search_financial_context(user_query, quarter)
+    logger.info(
+        "Retrieval node produced %d chars of context from %d source(s): %s",
+        len(context),
+        len(sources),
+        sources,
+    )
+    return {"context": context, "sources": sources}
 
 
 def quantitative_node(state: FinancialAgentState) -> dict[str, Any]:
@@ -149,20 +155,34 @@ def quantitative_node(state: FinancialAgentState) -> dict[str, Any]:
     if not ai_message.tool_calls:
         # No code generated — fall back to the model's direct text.
         logger.warning("Quantitative node: model returned no tool call.")
-        return {"context": extract_text(ai_message)}
+        return {"context": extract_text(ai_message), "sources": []}
 
     results: list[str] = []
+    code_blocks: list[str] = []
     for call in ai_message.tool_calls:
         code = call["args"]
+        code_text = code.get("query", "") if isinstance(code, dict) else str(code)
+        code_blocks.append(code_text)
         try:
             output = tool.invoke(code)
         except Exception as exc:  # noqa: BLE001 - surface REPL errors as context
             output = f"Pandas execution error: {exc}"
-        results.append(f"Code:\n{code.get('query', code)}\n\nResult:\n{output}")
+        results.append(f"Code:\n{code_text}\n\nResult:\n{output}")
 
     context = "\n\n".join(results)
+
+    # Cite the data file(s) the generated code actually referenced.
+    all_code = " ".join(code_blocks)
+    sources: list[str] = []
+    if "stock_df" in all_code:
+        sources.append(STOCK_CSV)
+    if "investor_df" in all_code:
+        sources.append(INVESTOR_XLS)
+    if not sources:
+        sources = [STOCK_CSV, INVESTOR_XLS]
+
     logger.info("Quantitative node produced %d chars of context.", len(context))
-    return {"context": context}
+    return {"context": context, "sources": sources}
 
 
 def drafter_node(state: FinancialAgentState) -> dict[str, Any]:
@@ -226,3 +246,31 @@ def critic_node(state: FinancialAgentState) -> dict[str, Any]:
 
     logger.warning("Critic: draft FAILED fact-check — %s", verdict)
     return {"errors": verdict}
+
+
+def format_node(state: FinancialAgentState) -> dict[str, Any]:
+    """Decide how the final answer is delivered — text, PDF, or Excel.
+
+    This is the system making the format choice on the user's behalf, based on
+    the nature of the question and the answer (not on what the user asked for).
+    """
+    question = _last_user_message(state)
+    answer = _last_ai_message(state)
+
+    response = _get_llm().invoke(
+        [
+            SystemMessage(content=FORMAT_DECISION_PROMPT),
+            HumanMessage(content=f"QUESTION:\n{question}\n\nANSWER:\n{answer}"),
+        ]
+    )
+    raw = extract_text(response).strip().lower()
+
+    if "excel" in raw:
+        output_format = "excel"
+    elif "pdf" in raw:
+        output_format = "pdf"
+    else:
+        output_format = "text"
+
+    logger.info("Format node selected output_format=%s (raw=%r)", output_format, raw)
+    return {"output_format": output_format}

@@ -1,6 +1,8 @@
 """API routes for the financial analyst service.
 
 Exposes the LangGraph agent over HTTP and serves generated Excel/PDF artifacts.
+The output format is chosen by the agent's ``format`` node — never by parsing
+the user's wording — so the system, not the user, decides the delivery format.
 """
 
 from __future__ import annotations
@@ -21,24 +23,6 @@ from backend.utils.pdf_generator import generate_pdf_report
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-_EXCEL_KEYWORDS = ("excel", "spreadsheet", "xlsx", ".xls")
-_PDF_VERBS = ("generate", "create", "download", "make", "produce", "export")
-
-
-def _detect_export_format(query: str) -> str | None:
-    """Infer whether the user asked for a downloadable file.
-
-    The Sprint 2 router only classifies narrative/quantitative/chat, so the
-    output format (excel_export / pdf_report) is detected here from the query
-    wording until the router itself is extended.
-    """
-    lowered = query.lower()
-    if any(keyword in lowered for keyword in _EXCEL_KEYWORDS):
-        return "excel_export"
-    if "pdf" in lowered or ("report" in lowered and any(v in lowered for v in _PDF_VERBS)):
-        return "pdf_report"
-    return None
 
 
 def _is_separator(cells: list[str]) -> bool:
@@ -67,7 +51,7 @@ def _extract_table_records(text: str) -> list[dict]:
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest, agent=Depends(get_agent)) -> ChatResponse:
-    """Run the agent for a query and optionally emit a downloadable artifact."""
+    """Run the agent for a query and deliver the answer in the chosen format."""
     try:
         result = agent.invoke({"messages": [("user", request.query)]})
     except Exception as exc:  # noqa: BLE001 - convert any agent failure to HTTP
@@ -79,27 +63,22 @@ def chat(request: ChatRequest, agent=Depends(get_agent)) -> ChatResponse:
     messages = result.get("messages", [])
     answer = extract_text(messages[-1]) if messages else "(no answer produced)"
     intent = result.get("intent", "chat")
-    context = result.get("context", "")
+    sources = result.get("sources", [])
+    # The agent's format node decides text / pdf / excel — not the user.
+    output_format = result.get("output_format", "text")
 
-    # Output routing — generate a file when the user asked for one.
     file_url: str | None = None
-    export_format = _detect_export_format(request.query)
-
-    if export_format == "excel_export":
-        records = (
-            _extract_table_records(answer)
-            or _extract_table_records(context)
-            or [{"response": answer}]
-        )
+    if output_format == "excel":
+        records = _extract_table_records(answer) or [{"response": answer}]
         path = generate_excel(records, filename="chat_export.xlsx")
         file_url = f"/download/{Path(path).name}"
-        intent = "excel_export"
-    elif export_format == "pdf_report":
+    elif output_format == "pdf":
         path = generate_pdf_report(answer, filename="chat_report.pdf")
         file_url = f"/download/{Path(path).name}"
-        intent = "pdf_report"
 
-    return ChatResponse(answer=answer, intent=intent, file_url=file_url)
+    return ChatResponse(
+        answer=answer, intent=intent, sources=sources, file_url=file_url
+    )
 
 
 @router.get("/download/{filename}")

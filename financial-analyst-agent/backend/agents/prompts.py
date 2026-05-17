@@ -93,3 +93,25 @@ EVIDENCE / CONTEXT:
 
 DRAFT ANSWER:
 {draft}"""
+
+
+# --------------------------------------------------------------------------- #
+# Format decision / output orchestrator
+# --------------------------------------------------------------------------- #
+FORMAT_DECISION_PROMPT = """You decide how a financial analyst's answer should be
+delivered to the user. The user did NOT specify a format — you choose the one
+that best fits the content.
+
+Given the QUESTION and the ANSWER, reply with ONLY one lowercase token:
+
+- text  : a quick lookup, a single figure, a short factual answer, a brief
+  explanation, or an "I do not have data" response. Best shown inline in chat.
+- excel : a data-heavy result — a sizeable table of figures, a multi-row
+  dataset, or an extract the user would want to sort or analyse in a
+  spreadsheet.
+- pdf   : a summary, report, overview, or long-form structured analysis the
+  user would want to keep or share as a polished document.
+
+When the choice is borderline between text and a file, prefer text.
+
+Respond with one token only: text OR excel OR pdf."""

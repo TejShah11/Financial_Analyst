@@ -3,12 +3,16 @@
 Wraps the Sprint 1 :class:`ChromaFinancialRetriever` as a LangChain tool so the
 agent can pull narrative context (strategy, commentary, guidance) out of the
 indexed PDF corpus, optionally scoped to a specific fiscal quarter.
+
+Retrieval also exposes the *source documents* it drew from, so the agent can
+cite every document deterministically rather than relying on the LLM.
 """
 
 from __future__ import annotations
 
 import logging
 
+from langchain_core.documents import Document
 from langchain_core.tools import tool
 
 from backend.database.chroma_client import ChromaFinancialRetriever
@@ -47,6 +51,55 @@ def _normalise_quarter(quarter: str | None) -> str | None:
     return None
 
 
+def _retrieve(query: str, quarter: str | None) -> list[Document]:
+    """Run filtered, re-ranked retrieval and drop bare-header chunks."""
+    filters: dict[str, str] | None = None
+    normalised = _normalise_quarter(quarter)
+    if normalised:
+        # Only quarter is indexed as filterable metadata; year is intentionally
+        # omitted (single-FY corpus) to avoid producing an empty result set.
+        filters = {"quarter": normalised}
+
+    logger.info("Vector search: query=%r quarter=%s", query, normalised)
+    documents = _get_retriever().get_context(query=query, filters=filters, k=_TOP_K)
+    return [d for d in documents if len(d.page_content.strip()) >= _MIN_CHUNK_CHARS]
+
+
+def format_evidence(documents: list[Document]) -> str:
+    """Render retrieved documents into a single cited context block."""
+    if not documents:
+        return "No substantive content found in the Infosys documents for this query."
+    blocks: list[str] = []
+    for doc in documents:
+        source = doc.metadata.get("source", "unknown")
+        section = doc.metadata.get("header_1") or doc.metadata.get("header_2") or "—"
+        blocks.append(f"[Source: {source} | Section: {section}]\n{doc.page_content}")
+    return "\n\n---\n\n".join(blocks)
+
+
+def collect_sources(documents: list[Document]) -> list[str]:
+    """Return the unique source document names, in first-seen order."""
+    ordered: dict[str, None] = {}
+    for doc in documents:
+        source = doc.metadata.get("source")
+        if source:
+            ordered.setdefault(source, None)
+    return list(ordered)
+
+
+def search_financial_context(
+    query: str, quarter: str | None = None
+) -> tuple[str, list[str]]:
+    """Retrieve evidence and the list of source documents it was drawn from.
+
+    Returns:
+        A ``(context, sources)`` tuple — the formatted evidence block and the
+        unique source document names backing it.
+    """
+    documents = _retrieve(query, quarter)
+    return format_evidence(documents), collect_sources(documents)
+
+
 @tool
 def search_financial_docs(
     query: str,
@@ -69,37 +122,5 @@ def search_financial_docs(
         The concatenated text of the most relevant document chunks, each
         prefixed with its source and page/section metadata for citation.
     """
-    retriever = _get_retriever()
-
-    filters: dict[str, str] | None = None
-    normalised = _normalise_quarter(quarter)
-    if normalised:
-        # Only quarter is indexed as filterable metadata; year is intentionally
-        # omitted (single-FY corpus) to avoid producing an empty result set.
-        filters = {"quarter": normalised}
-
-    logger.info("Vector search: query=%r quarter=%s", query, normalised)
-    documents = retriever.get_context(query=query, filters=filters, k=_TOP_K)
-
-    if not documents:
-        return (
-            "No relevant content found in the FY26 financial documents "
-            f"for this query{f' (quarter={normalised})' if normalised else ''}."
-        )
-
-    blocks: list[str] = []
-    for doc in documents:
-        # Skip bare-header / page-number chunks that carry no real content.
-        if len(doc.page_content.strip()) < _MIN_CHUNK_CHARS:
-            continue
-        source = doc.metadata.get("source", "unknown")
-        section = doc.metadata.get("header_1") or doc.metadata.get("header_2") or "—"
-        blocks.append(f"[Source: {source} | Section: {section}]\n{doc.page_content}")
-
-    if not blocks:
-        return (
-            "No substantive content found in the Infosys documents "
-            f"for this query{f' (quarter={normalised})' if normalised else ''}."
-        )
-
-    return "\n\n---\n\n".join(blocks)
+    context, _ = search_financial_context(query, quarter)
+    return context

@@ -28,7 +28,12 @@ class ChatResponse(BaseModel):
         ..., description="The analyst's text answer (may contain a Markdown table)."
     )
     intent: str = Field(
-        ..., description="Routing/output intent resolved for this turn."
+        ..., description="Routing intent resolved for this turn."
+    )
+    sources: list[str] = Field(
+        default_factory=list,
+        description="Document(s) every piece of evidence for this answer was "
+        "drawn from — the citation guarantee.",
     )
     file_url: Optional[str] = Field(
         default=None,

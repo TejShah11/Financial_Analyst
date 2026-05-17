@@ -1,13 +1,14 @@
 """LangGraph DAG definition for the financial-analyst agent.
 
-Wires the Sprint 2 nodes into a directed graph with two conditional branches:
+Wires the agent nodes into a directed graph:
 
     query_planner ─┬─(narrative)────► retrieval ─────┐
                    ├─(quantitative)─► quantitative ──┤
                    └─(chat)─────────────────────────►├─► drafter ─► critic ─┬─(errors)─► drafter
-                                                      ┘                     └─(ok)─────► END
+                                                      ┘                     └─(ok)──► format ─► END
 
-The compiled graph is exported as ``app``.
+The ``format`` node decides the delivery format (text / pdf / excel) for the
+finished answer. The compiled graph is exported as ``app``.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from backend.agents.nodes import (
     MAX_REVISIONS,
     critic_node,
     drafter_node,
+    format_node,
     quantitative_node,
     query_planner_node,
     retrieval_node,
@@ -32,12 +34,12 @@ def _route_after_planner(state: FinancialAgentState) -> str:
         return "retrieval"
     if intent == "quantitative":
         return "quantitative"
-    # "chat" / "report" / anything else answers directly with no evidence step.
+    # "chat" / anything else answers directly with no evidence-gathering step.
     return "drafter"
 
 
 def _route_after_critic(state: FinancialAgentState) -> str:
-    """Loop back to the Drafter on a failed fact-check, else finish.
+    """Loop back to the Drafter on a failed fact-check, else move to formatting.
 
     The ``revisions`` guard ensures a persistently failing draft cannot trigger
     an unbounded Drafter <-> Critic cycle.
@@ -46,7 +48,7 @@ def _route_after_critic(state: FinancialAgentState) -> str:
     revisions = state.get("revisions", 0)
     if has_errors and revisions < MAX_REVISIONS:
         return "drafter"
-    return END
+    return "format"
 
 
 def build_graph() -> StateGraph:
@@ -59,6 +61,7 @@ def build_graph() -> StateGraph:
     workflow.add_node("quantitative", quantitative_node)
     workflow.add_node("drafter", drafter_node)
     workflow.add_node("critic", critic_node)
+    workflow.add_node("format", format_node)
 
     # --- Edges -------------------------------------------------------------- #
     workflow.set_entry_point("query_planner")
@@ -81,12 +84,14 @@ def build_graph() -> StateGraph:
     # Every draft is fact-checked.
     workflow.add_edge("drafter", "critic")
 
-    # Critic either sends the draft back for a rewrite or ends the run.
+    # Critic either sends the draft back for a rewrite or passes it to the
+    # format node, which chooses the delivery format before the run ends.
     workflow.add_conditional_edges(
         "critic",
         _route_after_critic,
-        {"drafter": "drafter", END: END},
+        {"drafter": "drafter", "format": "format"},
     )
+    workflow.add_edge("format", END)
 
     return workflow
 
