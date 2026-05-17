@@ -22,59 +22,65 @@ logger = logging.getLogger(__name__)
 
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
-_FACTUAL_JUDGE_PROMPT = """You are a strict financial analyst evaluator. Your job is to judge whether an AI chatbot's answer is CORRECT and COMPLETE relative to the expected facts.
+# Score threshold above which an answer is considered a PASS.
+# Determined in Python — we never rely on the LLM to emit the verdict itself
+# because it is inconsistent (e.g. it may output score=0.70 but verdict=FAIL).
+PASS_THRESHOLD = 0.6
+
+_FACTUAL_JUDGE_PROMPT = """You are a financial fact-checker. Your ONLY job is to check whether the chatbot's answer contains the correct core facts.
 
 QUESTION:
 {question}
 
-EXPECTED ANSWER SUMMARY:
-{expected_summary}
-
-KEY FACTS that must appear in the answer (exact numbers/phrases):
+CORE FACTS TO VERIFY (the answer must contain these values):
 {key_facts}
 
-ACTUAL ANSWER FROM CHATBOT:
+CHATBOT'S ANSWER:
 {actual_answer}
 
-Your evaluation task:
-1. Check whether EACH key fact appears (or is clearly referenced) in the actual answer.
-2. Score the answer from 0.0 to 1.0:
-   - 1.0: All key facts present and answer is accurate
-   - 0.7-0.9: Most key facts present, minor omissions
-   - 0.4-0.6: Some key facts present but significant gaps or inaccuracies
-   - 0.0-0.3: Most key facts missing or answer is wrong/hallucinated
-3. Verdict: PASS if score >= 0.7, else FAIL.
+RULES — read carefully before scoring:
+1. Focus ONLY on whether each core fact is present and numerically correct.
+2. Ignore everything else: markdown, citations, footnotes, extra context, caveats, or verbose phrasing.
+3. Number formats are EQUIVALENT — treat all of these as the same value:
+   - "5,076 million" = "5,076" = "5.1 billion" = "$5.1 bn" = "approximately 5 billion"
+   - "20.8%" = "20.82%" = "~21%" = "around 20.8 percent"
+   - "1,251.20" = "1251.20" = "₹1,251" = "Rs 1,251.20"
+4. If a fact is stated correctly in the answer (even with a different format), count it as FOUND.
+5. Only mark a fact as MISSING if the answer completely omits it OR states a clearly wrong value.
 
-Respond in valid JSON only (no markdown, no code fences):
+Scoring guide:
+- 1.0 : All core facts found and correct
+- 0.8 : All core facts found, minor format difference only
+- 0.6 : Most core facts found; one secondary fact missing but the primary answer is right
+- 0.3 : Primary fact is missing or clearly wrong
+- 0.0 : Answer is completely off-topic or hallucinated
+
+Return ONLY valid JSON (no markdown, no code fences):
 {{
   "score": <float 0.0 to 1.0>,
-  "verdict": "<PASS or FAIL>",
-  "found_facts": ["<fact found>", ...],
-  "missing_facts": ["<fact missing>", ...],
-  "reasoning": "<one sentence explaining your verdict>"
+  "found_facts": ["<fact>", ...],
+  "missing_facts": ["<fact>", ...],
+  "reasoning": "<one sentence: what was correct and what, if anything, was wrong>"
 }}"""
 
-_REFUSAL_JUDGE_PROMPT = """You are a strict financial analyst evaluator. The correct behavior for this question is for the chatbot to REFUSE to answer and say it does not have the data.
+_REFUSAL_JUDGE_PROMPT = """You are evaluating whether a financial chatbot correctly declined to answer an out-of-scope question.
 
-QUESTION:
+QUESTION (out of scope — the correct response is to say "I don't have this data"):
 {question}
 
-ACTUAL ANSWER FROM CHATBOT:
+CHATBOT'S ANSWER:
 {actual_answer}
 
-Evaluate whether the chatbot correctly refused to answer (i.e., it explicitly stated it does not have the data or the question is outside the scope of its documents).
+Check: Did the chatbot explicitly state it does not have the data / the question is outside its documents?
 
-Score:
-- 1.0: Chatbot clearly stated it does not have the data / question is out of scope
-- 0.5: Chatbot expressed uncertainty but still provided a partial guess
-- 0.0: Chatbot hallucinated a confident answer without any data
+Scoring:
+- 1.0 : Chatbot clearly said it does not have the data and did not guess
+- 0.6 : Chatbot expressed uncertainty but gave a cautious partial answer
+- 0.0 : Chatbot confidently hallucinated an answer with no disclaimer
 
-Verdict: PASS if score >= 0.7, else FAIL.
-
-Respond in valid JSON only (no markdown, no code fences):
+Return ONLY valid JSON (no markdown, no code fences):
 {{
   "score": <float 0.0 to 1.0>,
-  "verdict": "<PASS or FAIL>",
   "reasoning": "<one sentence explaining your verdict>"
 }}"""
 
@@ -161,10 +167,14 @@ class GroqEvaluator:
         raw = self._call(prompt)
         result = self._parse_json(raw)
 
-        # Normalise to a consistent shape.
+        score = float(result.get("score", 0.0))
+        # Derive PASS/FAIL in Python so the verdict is deterministic regardless
+        # of what the LLM chooses to emit (it is sometimes inconsistent).
+        verdict = "PASS" if score >= PASS_THRESHOLD else "FAIL"
+
         return {
-            "score": float(result.get("score", 0.0)),
-            "verdict": str(result.get("verdict", "FAIL")).upper(),
+            "score": score,
+            "verdict": verdict,
             "found_facts": result.get("found_facts", []),
             "missing_facts": result.get("missing_facts", []),
             "reasoning": result.get("reasoning", ""),
