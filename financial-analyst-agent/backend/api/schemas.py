@@ -12,12 +12,17 @@ from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
-    """Inbound payload for the ``POST /chat`` endpoint."""
+    """Inbound payload for the ``POST /chat`` and ``/chat/stream`` endpoints."""
 
     query: str = Field(
         ...,
         min_length=1,
         description="The user's natural-language financial question.",
+    )
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Conversation thread id. Send the same value across turns "
+        "to give the agent multi-turn memory; omit it for a stateless one-off.",
     )
 
 

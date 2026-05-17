@@ -13,6 +13,7 @@ finished answer. The compiled graph is exported as ``app``.
 
 from __future__ import annotations
 
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 
 from backend.agents.nodes import (
@@ -97,4 +98,7 @@ def build_graph() -> StateGraph:
 
 
 # Compiled graph — the public entry point used by the API and test scripts.
-app = build_graph().compile()
+# The MemorySaver checkpointer persists each thread's state between invocations,
+# giving the agent multi-turn conversation memory. Callers must pass a
+# ``config={"configurable": {"thread_id": ...}}`` on every invoke / stream.
+app = build_graph().compile(checkpointer=MemorySaver())

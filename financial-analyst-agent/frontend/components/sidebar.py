@@ -45,6 +45,8 @@ def render_sidebar() -> None:
 
         st.divider()
         if st.button("Clear Conversation", use_container_width=True):
-            # Drop the history so app.py re-seeds the welcome message on rerun.
+            # Drop the history (app.py re-seeds the welcome message) and the
+            # session id, so the backend starts a fresh conversation thread.
             st.session_state.pop("messages", None)
+            st.session_state.pop("session_id", None)
             st.rerun()
