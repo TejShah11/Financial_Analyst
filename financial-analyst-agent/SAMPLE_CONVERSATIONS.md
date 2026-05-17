@@ -4,109 +4,67 @@ Six representative conversations demonstrating the chatbot's capabilities across
 
 ---
 
-## Conversation 1 — Simple Narrative Lookup (Easy)
+## Conversation 1
 
-**Route:** `vector_search`  
-**Source:** `ifrs-usd-press-release_q1.pdf`  
-**Difficulty:** Easy
-
-> **User:** What was Infosys's revenue in Q1 FY26?
-
-> **LedgerMind:** *(answer with revenue figure, constant-currency growth, sequential growth)*
+> **User:** What was the large deal TCV in Q3 FY26?
 
 **Screenshot:**
 
-<!-- Attach screenshot here -->
-![Conversation 1 — Q1 Revenue](docs/screenshots/conv1_q1_revenue.png)
+![alt text](image-8.png)
 
 ---
 
-## Conversation 2 — Quantitative / Stock Data Lookup
+## Conversation 2 
 
-**Route:** `pandas_calc`  
-**Source:** `500209.csv`  
-**Difficulty:** Easy
-
-> **User:** What was the closing price of Infosys stock on March 30, 2026?
-
-> **LedgerMind:** *(answer with exact closing price in INR)*
+> **User:** How did Infosys's revenue growth guidance change across the four quarterly press releases in FY26 - did they revise it upward or downward, and at which quarter was the first revision made?
 
 **Screenshot:**
 
-<!-- Attach screenshot here -->
-![Conversation 2 — Stock Close Price](docs/screenshots/conv2_stock_close.png)
+![alt text](image-3.png)
 
 ---
 
-## Conversation 3 — Hard Multi-Document Comparison
+## Conversation 3
 
-**Route:** `vector_search` (multi-quarter)  
-**Sources:** `ifrs-usd-press-release_q1.pdf`, `ifrs-usd-press-release_q2.pdf`, `ifrs-usd-press-release_q3.pdf`  
-**Difficulty:** Hard
-
-> **User:** How did Infosys revise its FY26 revenue guidance across Q1, Q2, and Q3?
-
-> **LedgerMind:** *(answer tracing guidance from 1%–3% → 2%–3% → 3.0%–3.5% in constant currency)*
+> **User:** What are the main risks facing Infosys's business?
 
 **Screenshot:**
 
-<!-- Attach screenshot here -->
-![Conversation 3 — Guidance Revision Trend](docs/screenshots/conv3_guidance_revisions.png)
+![alt text](image-4.png)
 
 ---
 
-## Conversation 4 — Multi-Turn Follow-up (Memory Demo)
+## Conversation 4 
 
-**Route:** Turn 1 `vector_search` → Turn 2 `vector_search` with coreference resolution  
-**Source:** `ifrs-usd-press-release_q3.pdf`  
-**Difficulty:** Hard
+> **User's first prompt:** What is the operating margin in Q3 FY26?
 
-> **User:** What was the operating margin in Q3 FY26?
-
-> **LedgerMind:** *(answer with reported IFRS margin and adjusted margin)*
-
-> **User:** What caused the gap between the two figures?
-
-> **LedgerMind:** *(answer explaining the Labour Codes provision of $143 million)*
+> **User's second prompt:** Can you compare this with the previous quarter?
 
 **Screenshot:**
 
-<!-- Attach screenshot here -->
-![Conversation 4 — Multi-Turn Memory](docs/screenshots/conv4_multiturn_margin.png)
+![alt text](image-5.png)
 
 ---
 
-## Conversation 5 — Out-of-Scope Adversarial (Refusal)
+## Conversation 5
 
-**Route:** `vector_search` → refusal  
-**Source:** *(none — out of corpus)*  
-**Difficulty:** Hard
+> **User's first prompt:** List the date, closing price, traded volume and turnover for the 15 most recent trading days.
 
-> **User:** What was Infosys's credit rating assigned by Moody's?
-
-> **LedgerMind:** *(politely states it does not have Moody's rating data in the provided documents and does not guess)*
+> **User's second prompt:** Calculate the average daily traded volume and the total turnover across every trading day in the stock data.
 
 **Screenshot:**
 
-<!-- Attach screenshot here -->
-![Conversation 5 — Refusal](docs/screenshots/conv5_refusal_credit_rating.png)
+![alt text](image-6.png)
 
 ---
 
-## Conversation 6 — FY27 Guidance + Download Export
+## Conversation 6
 
-**Route:** `vector_search` → PDF/Excel export  
-**Source:** `ifrs-usd-press-release_q4.pdf`  
-**Difficulty:** Easy
-
-> **User:** What is Infosys's revenue growth and operating margin guidance for FY27? Export it as a PDF.
-
-> **LedgerMind:** *(answer with 1.5%–3.5% CC growth and 20%–22% margin guidance, plus a downloadable PDF report)*
+> **User:** Based on the FY26 results, what will Infosys's revenue and EPS be in FY27?
 
 **Screenshot:**
 
-<!-- Attach screenshot here -->
-![Conversation 6 — FY27 Guidance with PDF Export](docs/screenshots/conv6_fy27_guidance_export.png)
+![alt text](image-7.png)
 
 ---
 
