@@ -30,11 +30,15 @@ by the user's NEW QUESTION. Do two things:
      risks) from the annual report or quarterly press releases.
    - pandas_calc : computations over the structured market data — the daily
      stock-price CSV (price, volume, turnover, trades) or the investor sheet.
+   - hybrid : the question genuinely needs BOTH — a reported figure from the
+     documents AND a calculation over the market data (e.g. "is revenue growth
+     higher than the stock's price appreciation over FY26?"). Use this only
+     when both are truly required to answer.
    - direct_answer : greetings, chit-chat, or meta questions needing no lookup.
 
 Reply in EXACTLY this format and nothing else:
 QUERY: <the self-contained query>
-ROUTE: <vector_search|pandas_calc|direct_answer>"""
+ROUTE: <vector_search|pandas_calc|hybrid|direct_answer>"""
 
 
 # --------------------------------------------------------------------------- #
@@ -63,6 +67,12 @@ Rules:
    "I do not have data in the provided Infosys documents to answer this."
    Do NOT fabricate a response.
 5. Be precise. Use Markdown tables when presenting or comparing figures.
+6. ALWAYS state the currency and unit of every figure (e.g. "₹ crore",
+   "US$ million"). The FY25 annual report reports in Indian Rupees (₹ crore);
+   the FY26 quarterly press releases report in US Dollars (US$ million/billion).
+   NEVER compare or combine figures of different currencies as if equivalent —
+   if the evidence mixes currencies, say so explicitly and do not imply the
+   numbers are directly comparable.
 
 If the CRITIC has returned feedback about a previous draft, you MUST correct
 those specific issues in your new answer.
@@ -80,10 +90,16 @@ Your job is to verify the DRAFT ANSWER strictly against the EVIDENCE. You do
 NOT rewrite the answer — you only judge it.
 
 Check that:
-- Every number in the draft appears EXACTLY in the evidence (no rounding,
-  no invented figures, no transposed digits).
-- Every claim is supported by the evidence and is correctly cited.
+- Every number in the draft can be LOCATED verbatim in the evidence (no
+  rounding, no invented figures, no transposed digits). If a figure does not
+  appear in the evidence at all, the draft is UNSUPPORTED — FAIL it. Absence
+  of a contradiction is NOT confirmation; silence in the evidence means the
+  claim is unverified and must fail.
+- Every claim is supported by the evidence and correctly cited. If the draft
+  cites a source or section that does not appear in the evidence, FAIL.
 - The draft does not introduce facts absent from the evidence.
+- Every figure states its currency/unit, and figures of different currencies
+  (₹ crore vs US$ million) are NOT compared as if equivalent.
 
 A draft that honestly states the evidence does not contain the answer is
 grounded and correct — treat that as a PASS, not a failure.

@@ -2,10 +2,10 @@
 
 Exposes the LangGraph agent over HTTP and serves generated Excel/PDF artifacts.
 
-- ``POST /chat``        — run the agent, return the answer + a downloadable file.
-- ``POST /chat/stream`` — same, but streams node-by-node progress as NDJSON so
-  the UI can show what the backend is doing in real time.
-- ``GET  /download/...``— serve a generated artifact.
+- ``POST /chat``         — run the agent, return the answer + a downloadable file.
+- ``POST /chat/stream``  — same, but streams node-by-node progress as NDJSON.
+- ``GET  /history/{id}`` — replay a conversation thread (survives UI refresh).
+- ``GET  /download/...`` — serve a generated artifact.
 
 Multi-turn memory is keyed by ``session_id`` (the LangGraph thread id); the
 output format (PDF / Excel) is chosen by the agent's format node.
@@ -21,7 +21,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
+from langchain_core.messages import HumanMessage
 
+from backend.agents.nodes import extract_text
 from backend.api.dependencies import get_agent
 from backend.api.schemas import ChatRequest, ChatResponse
 from backend.core.config import get_settings
@@ -51,23 +53,31 @@ def _is_separator(cells: list[str]) -> bool:
     return all(set(cell) <= set("-: ") and cell for cell in cells)
 
 
-def _extract_table_records(text: str) -> list[dict]:
-    """Parse the first Markdown table in ``text`` into a list of row dicts."""
-    rows = [
-        [cell.strip() for cell in line.strip().strip("|").split("|")]
-        for line in text.splitlines()
-        if line.strip().startswith("|") and line.strip().endswith("|")
-    ]
-    if len(rows) < 2:
-        return []
+def _extract_tables(text: str) -> list[list[dict]]:
+    """Parse EVERY Markdown table in ``text`` into a list of record-lists."""
+    tables: list[list[dict]] = []
+    block: list[list[str]] = []
 
-    header = rows[0]
-    records: list[dict] = []
-    for row in rows[1:]:
-        if _is_separator(row) or len(row) != len(header):
-            continue
-        records.append(dict(zip(header, row)))
-    return records
+    def _flush() -> None:
+        if len(block) >= 2:
+            header = block[0]
+            records = [
+                dict(zip(header, row))
+                for row in block[1:]
+                if not _is_separator(row) and len(row) == len(header)
+            ]
+            if records:
+                tables.append(records)
+        block.clear()
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("|") and stripped.endswith("|"):
+            block.append([c.strip() for c in stripped.strip("|").split("|")])
+        else:
+            _flush()
+    _flush()
+    return tables
 
 
 def _fresh_turn_input(query: str) -> dict:
@@ -75,7 +85,7 @@ def _fresh_turn_input(query: str) -> dict:
 
     ``messages`` is appended by the checkpointer's reducer (preserving history);
     every other field is reset so a new turn does not inherit stale per-turn
-    state (e.g. a leftover revision count).
+    state (e.g. a leftover revision count or the previous answer's draft).
     """
     return {
         "messages": [("user", query)],
@@ -87,15 +97,28 @@ def _fresh_turn_input(query: str) -> dict:
         "revisions": 0,
         "sources": [],
         "output_format": "",
+        "verified": True,
     }
 
 
 def _generate_artifact(answer: str, output_format: str) -> str:
-    """Render the answer to a PDF/Excel file and return its download URL."""
+    """Render the answer to a PDF/Excel file and return its download URL.
+
+    For Excel, EVERY Markdown table in the answer is exported — multiple tables
+    become multiple sheets so none is silently dropped.
+    """
     suffix = uuid.uuid4().hex[:8]
     if output_format == "excel":
-        records = _extract_table_records(answer) or [{"response": answer}]
-        path = generate_excel(records, filename=f"analysis_{suffix}.xlsx")
+        tables = _extract_tables(answer)
+        if len(tables) > 1:
+            data: list[dict] | dict[str, list[dict]] = {
+                f"Table {i}": table for i, table in enumerate(tables, start=1)
+            }
+        elif len(tables) == 1:
+            data = tables[0]
+        else:
+            data = [{"response": answer}]
+        path = generate_excel(data, filename=f"analysis_{suffix}.xlsx")
     else:
         path = generate_pdf_report(answer, filename=f"report_{suffix}.pdf")
     return f"/download/{Path(path).name}"
@@ -126,6 +149,7 @@ def chat(request: ChatRequest, agent=Depends(get_agent)) -> ChatResponse:
         answer=answer,
         intent=result.get("intent", "chat"),
         sources=result.get("sources", []),
+        verified=result.get("verified", True),
         file_url=file_url,
     )
 
@@ -173,6 +197,7 @@ def chat_stream(request: ChatRequest, agent=Depends(get_agent)) -> StreamingResp
                     "answer": answer,
                     "intent": final.get("intent", "chat"),
                     "sources": final.get("sources", []),
+                    "verified": final.get("verified", True),
                     "file_url": file_url,
                 }
             ) + "\n"
@@ -183,6 +208,22 @@ def chat_stream(request: ChatRequest, agent=Depends(get_agent)) -> StreamingResp
             ) + "\n"
 
     return StreamingResponse(_events(), media_type="application/x-ndjson")
+
+
+@router.get("/history/{session_id}")
+def history(session_id: str, agent=Depends(get_agent)) -> dict:
+    """Replay a conversation thread so the UI can restore it after a refresh."""
+    config = {"configurable": {"thread_id": session_id}}
+    try:
+        state_values = agent.get_state(config).values or {}
+    except Exception:  # noqa: BLE001 - an unknown thread is simply empty
+        return {"messages": []}
+
+    messages = []
+    for message in state_values.get("messages", []):
+        role = "user" if isinstance(message, HumanMessage) else "assistant"
+        messages.append({"role": role, "content": extract_text(message)})
+    return {"messages": messages}
 
 
 @router.get("/download/{filename}")

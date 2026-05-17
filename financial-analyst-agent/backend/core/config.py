@@ -55,6 +55,10 @@ class Settings(BaseSettings):
         default=Path("./data/exports"),
         description="Generated downloadable artifacts (Excel / PDF reports).",
     )
+    CHECKPOINT_DB: Path = Field(
+        default=Path("./data/agent_memory.sqlite"),
+        description="SQLite file persisting LangGraph conversation checkpoints.",
+    )
 
 
 @lru_cache(maxsize=1)

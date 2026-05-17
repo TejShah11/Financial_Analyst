@@ -41,6 +41,9 @@ class FinancialAgentState(TypedDict):
             for this turn was drawn from — the citation guarantee.
         output_format: Delivery format chosen by the format node — ``"pdf"`` or
             ``"excel"`` (every answer is also delivered as a downloadable file).
+        verified: Whether the final answer passed the Critic's fact-check. False
+            means the revision budget was exhausted with the draft still failing;
+            the answer is delivered with an explicit warning.
     """
 
     messages: Annotated[list, add_messages]
@@ -52,3 +55,4 @@ class FinancialAgentState(TypedDict):
     revisions: int
     sources: list[str]
     output_format: str
+    verified: bool

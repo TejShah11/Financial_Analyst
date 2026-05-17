@@ -8,4 +8,5 @@ __pycache__/
 /data/processed/*
 /data/exports/*
 /data/chroma_db/
+/data/agent_memory.sqlite*
 !/data/**/.gitkeep

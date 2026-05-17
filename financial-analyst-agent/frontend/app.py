@@ -33,15 +33,39 @@ _WELCOME_MESSAGE = (
 )
 
 
+def _load_history(session_id: str) -> list[dict] | None:
+    """Fetch a thread's conversation from the backend (used to survive refresh)."""
+    try:
+        response = requests.get(f"{BACKEND_URL}/history/{session_id}", timeout=15)
+        response.raise_for_status()
+        messages = response.json().get("messages", [])
+        return [
+            {"role": m["role"], "content": m["content"]} for m in messages
+        ] or None
+    except requests.exceptions.RequestException:
+        return None
+
+
 def _init_session_state() -> None:
-    """Seed the welcome message and a conversation id on first load."""
+    """Establish the conversation id and history, surviving browser refreshes.
+
+    The session id is stored in the URL query string, so a refresh keeps the
+    same backend thread; the conversation is then restored from the backend.
+    """
+    if "session_id" not in st.session_state:
+        url_session = st.query_params.get("session")
+        if url_session:
+            # Refresh / shared link — keep the existing backend thread.
+            st.session_state.session_id = url_session
+        else:
+            st.session_state.session_id = uuid.uuid4().hex
+            st.query_params["session"] = st.session_state.session_id
+
     if "messages" not in st.session_state:
-        st.session_state.messages = [
+        restored = _load_history(st.session_state.session_id)
+        st.session_state.messages = restored or [
             {"role": "assistant", "content": _WELCOME_MESSAGE}
         ]
-    if "session_id" not in st.session_state:
-        # One thread id per browser session — gives the agent multi-turn memory.
-        st.session_state.session_id = uuid.uuid4().hex
 
 
 def _error_message(detail: str) -> dict:

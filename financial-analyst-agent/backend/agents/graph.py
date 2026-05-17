@@ -2,18 +2,27 @@
 
 Wires the agent nodes into a directed graph:
 
-    query_planner ─┬─(narrative)────► retrieval ─────┐
-                   ├─(quantitative)─► quantitative ──┤
-                   └─(chat)─────────────────────────►├─► drafter ─► critic ─┬─(errors)─► drafter
-                                                      ┘                     └─(ok)──► format ─► END
+    query_planner ─┬─(narrative)────► retrieval ─────────────────┐
+                   ├─(hybrid)───────► retrieval ─► quantitative ─┤
+                   ├─(quantitative)─► quantitative ──────────────┤
+                   └─(chat)──────────────────────────────────────┤
+                                                                  ▼
+                       drafter ─► critic ─┬─(errors)─► drafter
+                                          └─(ok)─────► format ─► END
 
-The ``format`` node decides the delivery format (text / pdf / excel) for the
-finished answer. The compiled graph is exported as ``app``.
+A *hybrid* question routes through BOTH retrieval and the quantitative track;
+the quantitative node appends its computed result to the retrieved context so
+the drafter can answer from combined evidence.
+
+Conversation state is persisted with a SqliteSaver checkpointer, so multi-turn
+memory survives server restarts. The compiled graph is exported as ``app``.
 """
 
 from __future__ import annotations
 
-from langgraph.checkpoint.memory import MemorySaver
+import sqlite3
+
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, StateGraph
 
 from backend.agents.nodes import (
@@ -26,17 +35,24 @@ from backend.agents.nodes import (
     retrieval_node,
 )
 from backend.agents.state import FinancialAgentState
+from backend.core.config import get_settings
 
 
 def _route_after_planner(state: FinancialAgentState) -> str:
     """Branch out of the planner based on the classified intent."""
     intent = state.get("intent", "chat")
-    if intent == "narrative":
+    if intent in ("narrative", "hybrid"):
+        # Hybrid questions gather narrative evidence first, then compute.
         return "retrieval"
     if intent == "quantitative":
         return "quantitative"
-    # "chat" / anything else answers directly with no evidence-gathering step.
+    # "chat" answers directly with no evidence-gathering step.
     return "drafter"
+
+
+def _route_after_retrieval(state: FinancialAgentState) -> str:
+    """After retrieval, a hybrid query also runs the quantitative track."""
+    return "quantitative" if state.get("intent") == "hybrid" else "drafter"
 
 
 def _route_after_critic(state: FinancialAgentState) -> str:
@@ -67,7 +83,6 @@ def build_graph() -> StateGraph:
     # --- Edges -------------------------------------------------------------- #
     workflow.set_entry_point("query_planner")
 
-    # Planner routes to one of the three evidence paths.
     workflow.add_conditional_edges(
         "query_planner",
         _route_after_planner,
@@ -78,8 +93,12 @@ def build_graph() -> StateGraph:
         },
     )
 
-    # Both evidence-gathering tracks converge on the Drafter.
-    workflow.add_edge("retrieval", "drafter")
+    # Retrieval continues to the quantitative track for hybrid queries.
+    workflow.add_conditional_edges(
+        "retrieval",
+        _route_after_retrieval,
+        {"quantitative": "quantitative", "drafter": "drafter"},
+    )
     workflow.add_edge("quantitative", "drafter")
 
     # Every draft is fact-checked.
@@ -97,8 +116,18 @@ def build_graph() -> StateGraph:
     return workflow
 
 
+def _build_checkpointer() -> SqliteSaver:
+    """Build a disk-backed checkpointer so memory survives server restarts."""
+    db_path = get_settings().CHECKPOINT_DB
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    # check_same_thread=False: uvicorn serves requests across worker threads
+    # that all share this single connection.
+    connection = sqlite3.connect(str(db_path), check_same_thread=False)
+    checkpointer = SqliteSaver(connection)
+    checkpointer.setup()  # idempotent — creates the checkpoint tables if absent.
+    return checkpointer
+
+
 # Compiled graph — the public entry point used by the API and test scripts.
-# The MemorySaver checkpointer persists each thread's state between invocations,
-# giving the agent multi-turn conversation memory. Callers must pass a
-# ``config={"configurable": {"thread_id": ...}}`` on every invoke / stream.
-app = build_graph().compile(checkpointer=MemorySaver())
+# Callers must pass config={"configurable": {"thread_id": ...}} on every run.
+app = build_graph().compile(checkpointer=_build_checkpointer())
