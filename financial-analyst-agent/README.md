@@ -1,6 +1,10 @@
-# LedgerMind — Infosys FY26 Financial Analyst Agent
+# LedgerMind - Infosys FY26 Financial Analyst Agent
 
 An enterprise-grade agentic RAG chatbot that answers questions about Infosys FY26 financial documents. It combines semantic vector search, a live Pandas REPL, a Drafter→Critic self-correction loop, multi-turn memory, and downloadable PDF/Excel reports — all orchestrated by a LangGraph directed acyclic graph.
+
+![alt text](image.png)
+
+![alt text](image-1.png)
 
 ---
 
@@ -26,22 +30,22 @@ An enterprise-grade agentic RAG chatbot that answers questions about Infosys FY2
 │  Next.js 14 chatbot (port 3000)   │   Streamlit UI (port 8501)          │
 │  React + Tailwind + TypeScript    │   Python + Streamlit                │
 └────────────────────┬──────────────┴────────────────────┬────────────────┘
-                     │  POST /chat/stream (NDJSON)        │  POST /chat/stream
-                     ▼                                    ▼
+                     │  POST /chat/stream (NDJSON)       │  POST /chat/stream
+                     ▼                                   ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                       FastAPI Backend  (port 8000)                      │
-│   /chat  /chat/stream  /history/{id}  /download/{file}  /health        │
-│   CORS open · NDJSON streaming · SqliteSaver multi-turn memory         │
+│   /chat  /chat/stream  /history/{id}  /download/{file}  /health         │
+│   CORS open · NDJSON streaming · SqliteSaver multi-turn memory          │
 └────────────────────────────────┬────────────────────────────────────────┘
                                  │
                     ┌────────────▼────────────┐
-                    │   LangGraph Agent DAG    │
+                    │   LangGraph Agent DAG   │
                     │                         │
                     │  query_planner          │  ← classifies intent,
                     │       │                 │    resolves follow-ups
                     │  ┌────┴──────────┐      │
                     │  │               │      │
-                    │ retrieval   quantitative │  ← Track A: ChromaDB BGE
+                    │ retrieval   quantitative│  ← Track A: ChromaDB BGE
                     │  │               │      │    Track B: Pandas REPL
                     │  └────┬──────────┘      │
                     │       │                 │
@@ -55,9 +59,9 @@ An enterprise-grade agentic RAG chatbot that answers questions about Infosys FY2
               ┌──────────┘              └──────────┐
               ▼                                    ▼
   ┌───────────────────┐              ┌─────────────────────┐
-  │   ChromaDB        │              │   Pandas DataFrames  │
-  │   data/chroma_db/ │              │   500209.csv         │
-  │   BGE-large embed │              │   500209.xls         │
+  │   ChromaDB        │              │   Pandas DataFrames │
+  │   data/chroma_db/ │              │   500209.csv        │
+  │   BGE-large embed │              │   500209.xls        │
   │   BGE-reranker    │              └─────────────────────┘
   └───────────────────┘
 ```
