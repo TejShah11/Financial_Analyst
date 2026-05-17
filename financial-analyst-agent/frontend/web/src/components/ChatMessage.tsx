@@ -24,26 +24,27 @@ function SourceBadge({ source }: { source: string }) {
   const name = source.replace(/\.pdf$|\.csv$|\.xls$|\.xlsx$/i, "");
   const ext = source.match(/\.(pdf|csv|xls|xlsx)$/i)?.[1]?.toLowerCase() ?? "";
 
+  // PDF uses neutral slate — red implies error/warning in UI design
   const colors: Record<string, string> = {
-    pdf: "rgba(239,68,68,0.15)",
-    csv: "rgba(34,197,94,0.15)",
-    xls: "rgba(59,130,246,0.15)",
-    xlsx: "rgba(59,130,246,0.15)",
+    pdf:  "rgba(100,116,139,0.18)",
+    csv:  "rgba(34,197,94,0.12)",
+    xls:  "rgba(59,130,246,0.12)",
+    xlsx: "rgba(59,130,246,0.12)",
   };
   const textColors: Record<string, string> = {
-    pdf: "#fca5a5",
-    csv: "#86efac",
-    xls: "#93c5fd",
+    pdf:  "#94a3b8",
+    csv:  "#6ee7b7",
+    xls:  "#93c5fd",
     xlsx: "#93c5fd",
   };
 
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
+      className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-xs"
       style={{
-        background: colors[ext] ?? "rgba(148,163,184,0.1)",
+        background: colors[ext] ?? "rgba(100,116,139,0.15)",
         color: textColors[ext] ?? "#94a3b8",
-        border: `1px solid ${textColors[ext] ? textColors[ext] + "30" : "rgba(148,163,184,0.15)"}`,
+        border: `1px solid ${textColors[ext] ? textColors[ext] + "35" : "rgba(100,116,139,0.2)"}`,
       }}
     >
       <FileTextIcon className="w-3 h-3 flex-shrink-0" />
@@ -60,23 +61,25 @@ function DownloadButton({ fileUrl }: { fileUrl: string }) {
     <a
       href={fileUrl}
       download={filename}
-      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+      className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
       style={{
         background: isExcel
-          ? "linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(16,185,129,0.2) 100%)"
-          : "linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(220,38,38,0.2) 100%)",
-        border: isExcel ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(239,68,68,0.3)",
-        color: isExcel ? "#86efac" : "#fca5a5",
+          ? "rgba(34,197,94,0.12)"
+          : "rgba(59,130,246,0.12)",
+        border: isExcel
+          ? "1px solid rgba(34,197,94,0.28)"
+          : "1px solid rgba(59,130,246,0.28)",
+        color: isExcel ? "#6ee7b7" : "#93c5fd",
       }}
     >
       {isExcel ? (
-        <FileSpreadsheetIcon className="w-4 h-4" />
+        <FileSpreadsheetIcon className="w-3.5 h-3.5 flex-shrink-0" />
       ) : (
-        <DownloadIcon className="w-4 h-4" />
+        <DownloadIcon className="w-3.5 h-3.5 flex-shrink-0" />
       )}
       {isExcel ? "Download Excel" : "Download PDF"}
       <span
-        className="text-xs px-1.5 py-0.5 rounded font-mono"
+        className="font-mono leading-none px-1.5 py-px rounded text-[10px]"
         style={{ background: "rgba(255,255,255,0.08)", color: "inherit" }}
       >
         {isExcel ? "XLSX" : "PDF"}
@@ -94,8 +97,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         <div
           className="max-w-[75%] px-4 py-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed"
           style={{
-            background: "linear-gradient(135deg, #1e3a5f 0%, #1e2d52 100%)",
-            border: "1px solid rgba(96,165,250,0.2)",
+            background: "linear-gradient(135deg, #1e3f6e 0%, #25336e 100%)",
+            border: "1px solid rgba(96,165,250,0.38)",
             color: "#e2e8f0",
           }}
         >
@@ -138,7 +141,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 
           {/* Message content */}
           {message.content && (
-            <div className="message-prose text-sm">
+            <div className="message-prose text-sm leading-[1.65]">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
@@ -193,13 +196,13 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           )}
         </div>
 
-        {/* Footer: verified badge + sources + download */}
+        {/* Footer: verified badge + sources + download — all h-7, aligned with bubble left */}
         {!message.isStreaming && message.content && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {message.verified && (
               <span
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-                style={{ background: "rgba(34,197,94,0.1)", color: "#86efac", border: "1px solid rgba(34,197,94,0.2)" }}
+                className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-xs"
+                style={{ background: "rgba(34,197,94,0.1)", color: "#6ee7b7", border: "1px solid rgba(34,197,94,0.25)" }}
               >
                 <ShieldCheckIcon className="w-3 h-3" />
                 Verified

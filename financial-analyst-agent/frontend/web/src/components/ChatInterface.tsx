@@ -389,9 +389,9 @@ export default function ChatInterface() {
               style={{
                 background: "var(--bg-raised)",
                 border: isLoading
-                  ? "1px solid rgba(59,130,246,0.4)"
-                  : "1px solid var(--border-md)",
-                boxShadow: isLoading ? "0 0 16px rgba(59,130,246,0.1)" : "none",
+                  ? "1px solid rgba(59,130,246,0.45)"
+                  : "1px solid rgba(255,255,255,0.16)",
+                boxShadow: isLoading ? "0 0 16px rgba(59,130,246,0.12)" : "none",
               }}
             >
               <textarea
@@ -444,7 +444,7 @@ export default function ChatInterface() {
               )}
             </div>
 
-            <p className="text-xs text-center mt-2" style={{ color: "var(--text-muted)" }}>
+            <p className="text-xs text-center mt-2" style={{ color: "#64748b" }}>
               LedgerMind is scoped to Infosys FY26 documents. Answers are grounded in source data only.
             </p>
           </div>

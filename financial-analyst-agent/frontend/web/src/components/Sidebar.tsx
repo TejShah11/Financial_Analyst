@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PlusIcon, MessageSquareIcon, Trash2Icon, XIcon, BarChart2Icon, BookOpenIcon, TrendingUpIcon } from "lucide-react";
+import { PlusIcon, MessageSquareIcon, Trash2Icon, XIcon, BarChart2Icon, BookOpenIcon } from "lucide-react";
 import clsx from "clsx";
 import type { Session } from "@/types";
 import { loadSessions, deleteSession, formatRelativeTime } from "@/lib/sessions";
@@ -166,11 +166,11 @@ export default function Sidebar({
               Knowledge Base
             </span>
           </div>
-          <ul className="space-y-1.5">
+          <ul className="space-y-2.5">
             {KNOWLEDGE_BASE.map((doc) => (
-              <li key={doc.label} className="flex items-start gap-1.5">
-                <span className="text-xs mt-0.5 flex-shrink-0">{doc.icon}</span>
-                <span className="text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
+              <li key={doc.label} className="flex items-start gap-1.5 py-0.5">
+                <span className="text-xs mt-px flex-shrink-0">{doc.icon}</span>
+                <span className="text-xs leading-snug" style={{ color: "#64748b" }}>
                   {doc.label}
                 </span>
               </li>
@@ -178,15 +178,6 @@ export default function Sidebar({
           </ul>
         </div>
 
-        {/* ── Tips ──────────────────────────────────────────────── */}
-        <div className="px-4 pb-4">
-          <div className="flex items-center gap-1.5 mb-1">
-            <TrendingUpIcon className="w-3 h-3" style={{ color: "var(--text-muted)" }} />
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Say <span className="font-medium" style={{ color: "#94a3b8" }}>"export to Excel"</span> to download data
-            </span>
-          </div>
-        </div>
       </aside>
     </>
   );
