@@ -19,8 +19,14 @@ logger = logging.getLogger(__name__)
 # across every tool call rather than re-instantiated each time.
 _retriever: ChromaFinancialRetriever | None = None
 
-# Number of chunks returned per search.
-_TOP_K = 5
+# Final number of chunks delivered to the agent. The retriever fetches a much
+# wider candidate pool internally and cross-encoder re-ranks it down to this few,
+# so the LLM sees only the most relevant context — no flooding.
+_TOP_K = 7
+
+# Chunks shorter than this are bare section headers / page numbers — drop them
+# so they do not crowd out real content in the context window.
+_MIN_CHUNK_CHARS = 40
 
 
 def _get_retriever() -> ChromaFinancialRetriever:
@@ -83,8 +89,17 @@ def search_financial_docs(
 
     blocks: list[str] = []
     for doc in documents:
+        # Skip bare-header / page-number chunks that carry no real content.
+        if len(doc.page_content.strip()) < _MIN_CHUNK_CHARS:
+            continue
         source = doc.metadata.get("source", "unknown")
         section = doc.metadata.get("header_1") or doc.metadata.get("header_2") or "—"
         blocks.append(f"[Source: {source} | Section: {section}]\n{doc.page_content}")
+
+    if not blocks:
+        return (
+            "No substantive content found in the Infosys documents "
+            f"for this query{f' (quarter={normalised})' if normalised else ''}."
+        )
 
     return "\n\n---\n\n".join(blocks)

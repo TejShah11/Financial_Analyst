@@ -51,6 +51,26 @@ CHUNK_OVERLAP = 150
 
 _QUARTER_RE = re.compile(r"q([1-4])", re.IGNORECASE)
 
+# Running headers / footers that LlamaParse repeats on every page. Left in, they
+# become hundreds of near-duplicate junk chunks that pollute vector retrieval.
+_BOILERPLATE_PHRASES = (
+    "infosys integrated annual report",
+    "business responsibility and sustainability report",
+    "infosys limited and subsidiaries",
+)
+# A chunk with fewer than this many real letters (after removing boilerplate
+# phrases and digits) is a bare header / page number and carries no content.
+_MIN_CONTENT_LETTERS = 40
+
+
+def _is_boilerplate(text: str) -> bool:
+    """Return True if a chunk is a repeated running header / page-number stub."""
+    lowered = text.lower()
+    for phrase in _BOILERPLATE_PHRASES:
+        lowered = lowered.replace(phrase, " ")
+    residual_letters = sum(1 for ch in lowered if ch.isalpha())
+    return residual_letters < _MIN_CONTENT_LETTERS
+
 
 def _derive_metadata(filename: str) -> dict[str, str]:
     """Infer provenance metadata from a raw-document filename.
@@ -98,9 +118,14 @@ def chunk_markdown(markdown_text: str, base_metadata: dict[str, str]) -> list[Do
     )
     child_chunks = recursive_splitter.split_documents(parent_sections)
 
-    # Drop empty / whitespace-only chunks: the embedding API rejects empty
-    # content with a 400 INVALID_ARGUMENT ("empty Part") error.
-    child_chunks = [c for c in child_chunks if c.page_content.strip()]
+    # Drop empty/whitespace chunks (the embedding API rejects empty content)
+    # and boilerplate chunks (repeated running headers / page numbers) that
+    # would otherwise crowd out real content during retrieval.
+    child_chunks = [
+        chunk
+        for chunk in child_chunks
+        if chunk.page_content.strip() and not _is_boilerplate(chunk.page_content)
+    ]
 
     for index, chunk in enumerate(child_chunks):
         # base_metadata wins over any colliding header keys; record chunk order.

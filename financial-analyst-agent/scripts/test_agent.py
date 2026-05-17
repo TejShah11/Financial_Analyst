@@ -15,6 +15,11 @@ from pathlib import Path
 # Make the project package importable when run as a plain script.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+# Financial text contains ₹, em-dashes, etc.; force UTF-8 so the default
+# Windows cp1252 console does not raise UnicodeEncodeError on print().
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 
 from backend.agents.graph import app  # noqa: E402
