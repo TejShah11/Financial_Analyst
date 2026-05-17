@@ -21,6 +21,8 @@ by the user's NEW QUESTION. Do two things:
    is unambiguous on its own. If the new question is already self-contained,
    repeat it unchanged. Keep explicit fiscal-period labels VERBATIM — write
    "Q4 FY26" as "Q4 FY26"; never expand it to "fourth quarter of fiscal 2026".
+   If the question spans a whole fiscal year or "all quarters", name each
+   quarter explicitly (Q1, Q2, Q3, Q4) in the rewrite.
 
 2. ROUTE the rewritten query into exactly one category:
    - vector_search : narrative / qualitative content OR reported financial

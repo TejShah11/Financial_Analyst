@@ -99,17 +99,25 @@ def _last_user_message(state: FinancialAgentState) -> str:
 _QUARTER_WORDS = {"first": "Q1", "second": "Q2", "third": "Q3", "fourth": "Q4"}
 
 
-def _extract_quarter(text: str) -> str | None:
-    """Detect a fiscal quarter (Q1-Q4, or spelled out) mentioned in the query."""
-    match = re.search(r"\bq([1-4])\b", text, flags=re.IGNORECASE)
-    if match:
-        return f"Q{match.group(1)}"
-    word_match = re.search(
+def _extract_quarters(text: str) -> list[str]:
+    """Detect EVERY fiscal quarter (Q1-Q4, or spelled out) mentioned, in order.
+
+    Returning all quarters — not just the first — is what lets a comparison
+    query ("Q1, Q2, Q3 and Q4") retrieve every quarter instead of being
+    filtered down to whichever one happened to appear first.
+    """
+    found: list[str] = []
+    for match in re.finditer(r"\bq([1-4])\b", text, flags=re.IGNORECASE):
+        quarter = f"Q{match.group(1)}"
+        if quarter not in found:
+            found.append(quarter)
+    for match in re.finditer(
         r"\b(first|second|third|fourth)[\s-]+quarter\b", text, flags=re.IGNORECASE
-    )
-    if word_match:
-        return _QUARTER_WORDS[word_match.group(1).lower()]
-    return None
+    ):
+        quarter = _QUARTER_WORDS[match.group(1).lower()]
+        if quarter not in found:
+            found.append(quarter)
+    return found
 
 
 def _parse_planner_output(raw: str) -> tuple[str, str]:
@@ -161,8 +169,8 @@ def query_planner_node(state: FinancialAgentState) -> dict[str, Any]:
 def retrieval_node(state: FinancialAgentState) -> dict[str, Any]:
     """Track A — pull narrative context (and its source documents) from the store."""
     query = state.get("resolved_query") or _last_user_message(state)
-    quarter = _extract_quarter(query)
-    context, sources = search_financial_context(query, quarter)
+    quarters = _extract_quarters(query)
+    context, sources = search_financial_context(query, quarters)
     logger.info(
         "Retrieval node produced %d chars of context from %d source(s): %s",
         len(context),
