@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import sys
+import uuid
 from pathlib import Path
 
 # Make the project package importable when run as a plain script.
@@ -55,16 +56,23 @@ def main() -> None:
 
     initial_state = {
         "messages": [HumanMessage(content=query)],
+        "resolved_query": "",
         "context": "",
         "intent": "",
+        "draft": "",
         "errors": "",
         "revisions": 0,
+        "sources": [],
+        "output_format": "",
     }
 
     final_answer = "(no answer produced)"
 
+    # The compiled graph uses a checkpointer, so a thread id is required.
+    config = {"configurable": {"thread_id": f"test-{uuid.uuid4().hex[:8]}"}}
+
     # stream_mode="updates" yields {node_name: partial_state_update} per step.
-    for step in app.stream(initial_state, stream_mode="updates"):
+    for step in app.stream(initial_state, config=config, stream_mode="updates"):
         for node_name, update in step.items():
             print(f"\n---------- NODE: {node_name} ----------")
             for key, value in update.items():

@@ -12,12 +12,17 @@ from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
-    """Inbound payload for the ``POST /chat`` endpoint."""
+    """Inbound payload for the ``POST /chat`` and ``/chat/stream`` endpoints."""
 
     query: str = Field(
         ...,
         min_length=1,
         description="The user's natural-language financial question.",
+    )
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Conversation thread id. Send the same value across turns "
+        "to give the agent multi-turn memory; omit it for a stateless one-off.",
     )
 
 
@@ -28,7 +33,12 @@ class ChatResponse(BaseModel):
         ..., description="The analyst's text answer (may contain a Markdown table)."
     )
     intent: str = Field(
-        ..., description="Routing/output intent resolved for this turn."
+        ..., description="Routing intent resolved for this turn."
+    )
+    sources: list[str] = Field(
+        default_factory=list,
+        description="Document(s) every piece of evidence for this answer was "
+        "drawn from — the citation guarantee.",
     )
     file_url: Optional[str] = Field(
         default=None,

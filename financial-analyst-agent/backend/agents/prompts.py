@@ -8,30 +8,33 @@ touching control flow.
 from __future__ import annotations
 
 # --------------------------------------------------------------------------- #
-# Router / query planner
+# Query planner — coreference resolution + routing
 # --------------------------------------------------------------------------- #
-ROUTER_PROMPT = """You are the routing engine of a financial analyst system.
+QUERY_PLANNER_PROMPT = """You are the query planner of a financial analyst system.
 
-Classify the user's question into EXACTLY ONE of these categories and reply
-with ONLY that single lowercase token — no punctuation, no explanation:
+You are given the CONVERSATION so far (earlier questions and answers) followed
+by the user's NEW QUESTION. Do two things:
 
-- vector_search : anything reported in the Infosys annual report or quarterly
-  press releases. This includes BOTH qualitative content (strategy, management
-  commentary, guidance, risks, outlook) AND reported financial-statement
-  figures — revenue, operating margin, net profit, EPS, large-deal TCV,
-  segment/geographic numbers, attrition, headcount.
-- pandas_calc : computations over the STRUCTURED MARKET DATA only — the daily
-  stock-price CSV (open/high/low/close price, traded volume, turnover, number
-  of trades, deliverable quantity) and the investor spreadsheet. Use it for
-  averages, min/max, date-range filtering, and growth over those data files.
-- direct_answer : general chit-chat, clarifications, or meta questions that
-  need no document or data lookup.
+1. REWRITE the new question into a fully self-contained query. Resolve every
+   pronoun and back-reference ("it", "that", "the previous quarter", "those
+   figures", "what about ...") using the conversation, so the rewritten query
+   is unambiguous on its own. If the new question is already self-contained,
+   repeat it unchanged. Keep explicit fiscal-period labels VERBATIM — write
+   "Q4 FY26" as "Q4 FY26"; never expand it to "fourth quarter of fiscal 2026".
+   If the question spans a whole fiscal year or "all quarters", name each
+   quarter explicitly (Q1, Q2, Q3, Q4) in the rewrite.
 
-Tie-breaker: a reported financial metric (margin, revenue, profit, EPS, TCV)
-is found in the press releases -> vector_search. A share-price / trading-volume
-question is found in the CSV -> pandas_calc.
+2. ROUTE the rewritten query into exactly one category:
+   - vector_search : narrative / qualitative content OR reported financial
+     figures (revenue, margin, profit, EPS, TCV, attrition, guidance, strategy,
+     risks) from the annual report or quarterly press releases.
+   - pandas_calc : computations over the structured market data — the daily
+     stock-price CSV (price, volume, turnover, trades) or the investor sheet.
+   - direct_answer : greetings, chit-chat, or meta questions needing no lookup.
 
-Respond with one token only: vector_search OR pandas_calc OR direct_answer."""
+Reply in EXACTLY this format and nothing else:
+QUERY: <the self-contained query>
+ROUTE: <vector_search|pandas_calc|direct_answer>"""
 
 
 # --------------------------------------------------------------------------- #
@@ -46,6 +49,9 @@ The knowledge base is Infosys's FY25 Integrated Annual Report (2024-25) and the
 FY26 quarterly earnings press releases (Q1-Q4). Refer to each period exactly as
 the evidence labels it — do not assume every document covers the same year.
 
+Answer the user's most recent question. Earlier conversation turns are provided
+for context — use them to interpret follow-up questions correctly.
+
 Rules:
 1. Ground every claim in the provided EVIDENCE. Never use outside knowledge or
    guess.
@@ -56,7 +62,7 @@ Rules:
 4. If the evidence does not contain the answer, state plainly:
    "I do not have data in the provided Infosys documents to answer this."
    Do NOT fabricate a response.
-5. Be concise and precise. Use Markdown tables when comparing figures.
+5. Be precise. Use Markdown tables when presenting or comparing figures.
 
 If the CRITIC has returned feedback about a previous draft, you MUST correct
 those specific issues in your new answer.
@@ -93,3 +99,23 @@ EVIDENCE / CONTEXT:
 
 DRAFT ANSWER:
 {draft}"""
+
+
+# --------------------------------------------------------------------------- #
+# Format decision / output orchestrator
+# --------------------------------------------------------------------------- #
+FORMAT_DECISION_PROMPT = """You decide how a financial analyst's answer is packaged
+as a downloadable file. Every answer is delivered as EITHER a PDF or an Excel
+file — choose the one that best fits the content.
+
+Given the QUESTION and the ANSWER, reply with ONLY one lowercase token:
+
+- excel : the answer is data-heavy — its substance is a table of figures, a
+  multi-row dataset, or numbers a user would want to sort, filter, or analyse
+  in a spreadsheet.
+- pdf   : the answer is narrative, explanatory, a summary, or a mixed
+  analysis — best read as a formatted document.
+
+When in doubt, choose pdf.
+
+Respond with one token only: excel OR pdf."""
