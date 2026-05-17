@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from tests.evaluation.evaluator import PASS_THRESHOLD
+
 
 def _reciprocal_rank(expected_sources: list[str], actual_sources: list[str]) -> float:
     """Return 1/rank of the first expected source found in actual_sources.
@@ -57,7 +59,7 @@ def compute_metrics(eval_results: list[dict]) -> dict:
     scores = [r.get("judge_score", 0.0) for r in eval_results]
     avg_score = sum(scores) / len(scores) if scores else 0.0
     pass_rate = (
-        sum(1 for r in eval_results if r.get("judge_verdict") == "PASS")
+        sum(1 for r in eval_results if r.get("judge_score", 0.0) >= PASS_THRESHOLD)
         / len(eval_results)
         if eval_results
         else 0.0
@@ -71,7 +73,7 @@ def compute_metrics(eval_results: list[dict]) -> dict:
     type_metrics: dict[str, dict] = {}
     for q_type, group in by_type.items():
         grp_scores = [r.get("judge_score", 0.0) for r in group]
-        grp_passes = sum(1 for r in group if r.get("judge_verdict") == "PASS")
+        grp_passes = sum(1 for r in group if r.get("judge_score", 0.0) >= PASS_THRESHOLD)
         retrieval_group = [r for r in group if not r.get("is_refusal_expected")]
         grp_rr = [
             _reciprocal_rank(r["expected_sources"], r.get("actual_sources", []))
