@@ -40,6 +40,11 @@ class ChatResponse(BaseModel):
         description="Document(s) every piece of evidence for this answer was "
         "drawn from — the citation guarantee.",
     )
+    verified: bool = Field(
+        default=True,
+        description="True if the answer passed the automated fact-check. False "
+        "means the revision budget was exhausted with the draft still failing.",
+    )
     file_url: Optional[str] = Field(
         default=None,
         description="Relative download URL when an Excel/PDF artifact was generated.",
