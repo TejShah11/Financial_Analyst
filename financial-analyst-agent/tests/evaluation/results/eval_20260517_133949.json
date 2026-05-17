@@ -1,0 +1,485 @@
+{
+  "run_timestamp": "2026-05-17T13:39:49.100256",
+  "dataset": "tests\\evaluation\\golden_dataset.json",
+  "metrics": {
+    "total_questions": 20,
+    "mrr": 0.9028,
+    "source_hit_rate": 0.9444,
+    "avg_judge_score": 0.84,
+    "pass_rate": 0.85,
+    "by_type": {
+      "narrative": {
+        "count": 15,
+        "avg_score": 0.92,
+        "pass_rate": 0.9333,
+        "mrr": 0.8833
+      },
+      "quantitative": {
+        "count": 3,
+        "avg_score": 1.0,
+        "pass_rate": 1.0,
+        "mrr": 1.0
+      },
+      "adversarial": {
+        "count": 2,
+        "avg_score": 0.0,
+        "pass_rate": 0.0,
+        "mrr": null
+      }
+    }
+  },
+  "results": [
+    {
+      "question_id": "q1_revenue",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_answer": "Infosys reported revenues of US$4,941 million for the quarter ended June 30, 2025 (Q1 FY26) [ifrs-usd-press-release_q1.pdf, Page 1].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states Infosys's revenue in Q1 FY26 as $4,941 million, matching the core fact.",
+      "found_facts": [
+        "4,941"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q1_operating_margin",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_answer": "Infosys's operating margin for Q1 FY26 was 20.8% [ifrs-usd-press-release_q1.pdf, Page 1].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states Infosys's operating margin in Q1 FY26 as 20.8%, matching the core fact.",
+      "found_facts": [
+        "20.8%"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q1_large_deal_tcv",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_answer": "In Q1 FY26, the Total Contract Value (TCV) of large deal wins was US$ 3.8 billion, with 55% being net new [ifrs-usd-press-release_q1.pdf, Page 1].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states the Total Contract Value as 3.8 billion and the percentage of net new as 55%, matching the core facts exactly.",
+      "found_facts": [
+        "3.8",
+        "55%"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q1_fcf",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf"
+      ],
+      "actual_answer": "For the quarter ended June 30, 2025 (Q1 FY26), Infosys reported the following:\n\n*   **Free Cash Flow (FCF):** $884 million [Source: ifrs-usd-press-release_q1.pdf, Page 1]\n*   **Free Cash Flow Conversion Rate:** 109.3% of net profit [Source: ifrs-usd-press-release_q1.pdf, Page 1]",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer contains the correct core fact of 884, which is Infosys's free cash flow in Q1 FY26.",
+      "found_facts": [
+        "884"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q2_revenue",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_answer": "Infosys reported revenues of US$5,076 million for Q2 FY26 [Source: ifrs-usd-press-release_q2.pdf, Page 1].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states Infosys's revenue in Q2 FY26 as $5,076 million, which matches the core fact.",
+      "found_facts": [
+        "5,076"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q2_net_new_pct",
+      "question_type": "narrative",
+      "difficulty": "medium",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_answer": "In Q2 of FY26, 67% of Infosys's large deal Total Contract Value (TCV) was net new [Source: ifrs-usd-press-release_q2.pdf, Section: Quarterly revenue crosses $5 bn mark; Second consecutive quarter of strong performance].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states that 67% of Infosys's large deal TCV in Q2 FY26 was net new, matching the core fact to verify.",
+      "found_facts": [
+        "67%"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q2_headcount",
+      "question_type": "narrative",
+      "difficulty": "medium",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_answer": "In Q2 FY26, the Infosys employee headcount increased by 8,203 [Source: ifrs-usd-press-release_q2.pdf, Section: Quarterly revenue crosses $5 bn mark; Second consecutive quarter of strong performance].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states that the Infosys employee headcount increased by 8,203 in Q2 FY26, matching the core fact to be verified.",
+      "found_facts": [
+        "8,203"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q2_fcf",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_answer": "Infosys's free cash flow in Q2 FY26 was US$1.1 billion [ifrs-usd-press-release_q2.pdf, Section: Quarterly revenue crosses $5 bn mark; Second consecutive quarter of strong performance].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 0.8,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer contains the correct core fact of Infosys's free cash flow in Q2 FY26, which is numerically equivalent to 1,101, although it is stated in a different format as US$1.1 billion.",
+      "found_facts": [
+        "1,101"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q3_margin_adjusted_vs_reported",
+      "question_type": "narrative",
+      "difficulty": "hard",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q3.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q3.pdf"
+      ],
+      "actual_answer": "For the quarter ended December 31, 2025 (Q3 FY26), the difference between the reported IFRS operating margin and the adjusted operating margin is as follows:\n\n| Metric | Value |\n| :--- | :--- |\n| Reported IFRS Operating Margin | 18.4% |\n| Adjusted Operating Margin | 21.2% |\n| **Difference** | **2.8%** |\n\n[Source: ifrs-usd-press-release_q3.pdf | Section: For the quarter ended December 31, 2025; Section: Reconciliation of Reported IFRS financial measures to Adjusted non-IFRS financial measures for 3 months ended]\n\n**Cause of the gap:**\nThe gap is caused by an adjustment of $143 million related to provisions arising from notifications by the Government of India on Labour Codes [Source: ifrs-usd-press-release_q3.pdf | Section: For nine months ended December 31, 2025; Section: Reconciliation of Reported IFRS financial measures to Adjusted non-IFRS financial measures for 3 months ended]. \n\nThe \"adjusted\" financial measures are non-IFRS measures that exclude the impact of these specific Labour Code provisions [Source: ifrs-usd-press-release_q3.pdf | Section: For nine months ended December 31, 2025].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states the reported IFRS operating margin as 18.4% and the adjusted operating margin as 21.2%, with both core facts present and numerically correct.",
+      "found_facts": [
+        "18.4%",
+        "21.2%"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q3_large_deal_tcv",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q3.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q3.pdf"
+      ],
+      "actual_answer": "In Q3 of FY26, Infosys reported a Total Contract Value (TCV) of large deal wins of US$ 4.8 billion [ifrs-usd-press-release_q3.pdf, Section: Revenue Guidance for FY 26 revised to 3.0%-3.5%].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states the large deal TCV of Infosys in Q3 FY26 as $4.8 billion, matching the core fact.",
+      "found_facts": [
+        "4.8"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q4_full_year_revenue",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q4.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf",
+        "ifrs-usd-press-release_q2.pdf",
+        "ifrs-usd-press-release_q3.pdf",
+        "ifrs-usd-press-release_q4.pdf"
+      ],
+      "actual_answer": "For the full fiscal year FY26, Infosys reported total revenues of $20,158 million [Source: ifrs-usd-press-release_q4.pdf, Page 1].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states Infosys's total revenue for the full fiscal year FY26 as $20,158 million, matching the core fact.",
+      "found_facts": [
+        "20,158"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "q4_eps",
+      "question_type": "narrative",
+      "difficulty": "medium",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q4.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q4.pdf"
+      ],
+      "actual_answer": "Based on the provided documents for the fiscal year ended March 31, 2026, the basic EPS figures are as follows:\n\n*   **Basic EPS for Q4 FY26:** $0.23 [Source: ifrs-usd-press-release_q4.pdf, Page 7]\n*   **Year-on-Year Change:** The basic EPS for Q4 FY26 was $0.23, compared to $0.20 for the same quarter in the previous year [Source: ifrs-usd-press-release_q4.pdf, Page 7].\n\n*Note: The evidence provided reports these figures in US Dollars (US$).*",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states the basic EPS for Q4 FY26 as $0.23, which matches the core fact to be verified.",
+      "found_facts": [
+        "0.23"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "fy27_guidance",
+      "question_type": "narrative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q4.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q4.pdf",
+        "ifrs-usd-press-release_q3.pdf",
+        "ifrs-usd-press-release_q2.pdf",
+        "ifrs-usd-press-release_q1.pdf",
+        "infosys-ar-25.pdf"
+      ],
+      "actual_answer": "Based on the provided documents, the guidance for Infosys for FY27 is as follows:\n\n*   **Revenue growth:** 1.5%-3.5% in constant currency [ifrs-usd-press-release_q4.pdf, Guidance for FY27]\n*   **Operating margin:** 20%-22% [ifrs-usd-press-release_q4.pdf, Guidance for FY27]",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer contains both core facts, 1.5% and 3.5%, as part of the revenue growth guidance for Infosys for FY27.",
+      "found_facts": [
+        "1.5%",
+        "3.5%"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "fy26_guidance_revision_trend",
+      "question_type": "narrative",
+      "difficulty": "hard",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "ifrs-usd-press-release_q1.pdf",
+        "ifrs-usd-press-release_q2.pdf",
+        "ifrs-usd-press-release_q3.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf",
+        "ifrs-usd-press-release_q2.pdf",
+        "ifrs-usd-press-release_q3.pdf"
+      ],
+      "actual_answer": "Based on the provided quarterly earnings press releases, Infosys revised its FY26 revenue growth guidance (in constant currency) as follows:\n\n| Reporting Period | FY26 Revenue Growth Guidance (Constant Currency) | Source |\n| :--- | :--- | :--- |\n| **Q1 FY26** | 1%-3% | [ifrs-usd-press-release_q1.pdf, Section: Guidance for FY26] |\n| **Q2 FY26** | 2%-3% | [ifrs-usd-press-release_q2.pdf, Section: Guidance for FY26] |\n| **Q3 FY26** | 3.0%-3.5% | [ifrs-usd-press-release_q3.pdf, Section: Guidance for FY26] |\n\nAll figures represent revenue growth guidance in constant currency [Source: ifrs-usd-press-release_q1.pdf; ifrs-usd-press-release_q2.pdf; ifrs-usd-press-release_q3.pdf].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer contains the correct core facts, including the 1%-3% and 3.0%-3.5% revenue growth guidance values, as required.",
+      "found_facts": [
+        "1%-3%",
+        "3.0%-3.5%"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "fy25_annual_revenue",
+      "question_type": "narrative",
+      "difficulty": "medium",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "infosys-ar-25.pdf"
+      ],
+      "actual_sources": [
+        "ifrs-usd-press-release_q1.pdf",
+        "ifrs-usd-press-release_q2.pdf",
+        "ifrs-usd-press-release_q3.pdf",
+        "ifrs-usd-press-release_q4.pdf"
+      ],
+      "actual_answer": "I do not have data in the provided Infosys documents to answer this.\n\nWhile the provided evidence includes the FY26 quarterly and annual press releases, it does not contain the full financial statements or the total revenue figure for the fiscal year ended March 31, 2025 (FY25). \n\nRegarding the calculation suggested in your feedback:\n*   The Q4 FY26 press release provides the revenue for the year ended March 31, 2026 ($20,158 million) [Source: ifrs-usd-press-release_q4.pdf, Page 1].\n*   The Q3 FY26 press release provides the revenue for the nine months ended December 31, 2025 ($15,117 million) [Source: ifrs-usd-press-release_q3.pdf, Page 1].\n*   Subtracting the nine-month revenue of FY26 from the full-year revenue of FY26 results in the revenue for the final quarter of FY26 (the three months ended March 31, 2026), not the total revenue for the fiscal year ended March 31, 2025.\n\nThe provided documents do not contain the total revenue figure for FY25.",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 0.0,
+      "judge_verdict": "FAIL",
+      "judge_reasoning": "The answer completely omits the core fact of Infosys's total revenue for FY25, which is 19,277.",
+      "found_facts": [],
+      "missing_facts": [
+        "19,277"
+      ]
+    },
+    {
+      "question_id": "stock_close_mar30",
+      "question_type": "quantitative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "500209.csv"
+      ],
+      "actual_sources": [
+        "500209.csv"
+      ],
+      "actual_answer": "The closing price of Infosys stock (BSE: 500209) on March 30, 2026, was 1251.2 [QUANTITATIVE ANALYSIS, Code/Result].",
+      "chatbot_intent": "quantitative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The chatbot's answer correctly stated the closing price of Infosys stock as 1251.2, which is numerically equivalent to the core fact 1251.20.",
+      "found_facts": [
+        "1251.20"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "stock_high_mar30",
+      "question_type": "quantitative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "500209.csv"
+      ],
+      "actual_sources": [
+        "500209.csv"
+      ],
+      "actual_answer": "The highest traded price of Infosys stock on March 30, 2026, was 1265.0 [QUANTITATIVE ANALYSIS, Result].",
+      "chatbot_intent": "quantitative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states the highest traded price of Infosys stock on March 30, 2026, as 1265, matching the core fact.",
+      "found_facts": [
+        "1265"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "shares_traded_mar30",
+      "question_type": "quantitative",
+      "difficulty": "easy",
+      "is_refusal_expected": false,
+      "expected_sources": [
+        "500209.csv"
+      ],
+      "actual_sources": [
+        "500209.csv"
+      ],
+      "actual_answer": "Based on the provided quantitative analysis, 645516 shares were traded on March 30, 2026 [QUANTITATIVE ANALYSIS, Result].",
+      "chatbot_intent": "quantitative",
+      "chatbot_verified": true,
+      "judge_score": 1.0,
+      "judge_verdict": "PASS",
+      "judge_reasoning": "The answer correctly states that 645516 shares of Infosys were traded on March 30, 2026, with the core fact present and numerically correct.",
+      "found_facts": [
+        "645516"
+      ],
+      "missing_facts": []
+    },
+    {
+      "question_id": "out_of_scope_q2fy25",
+      "question_type": "adversarial",
+      "difficulty": "hard",
+      "is_refusal_expected": true,
+      "expected_sources": [],
+      "actual_sources": [
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_answer": "To determine the revenue for the quarter ended September 30, 2024, we utilize the reported revenue for the quarter ended September 30, 2025, and the provided year-over-year (YoY) growth rate.\n\nAccording to the provided evidence, the reported revenue for the quarter ended September 30, 2025, was **US$ 5,076 million**, representing a growth of **3.7%** year-over-year [Source: ifrs-usd-press-release_q2.pdf, Page 1].\n\nUsing the formula:\n*Revenue (Q2 FY25) = Revenue (Q2 FY26) / (1 + Growth Rate)*\n*Revenue (Q2 FY25) = US$ 5,076 million / 1.037*\n\nThis results in a revenue of approximately **US$ 4,894.9 million** for the quarter ended September 30, 2024.\n\nPlease note that the provided evidence reports figures in US Dollars (US$ million) for the FY26 quarterly press release [Source: ifrs-usd-press-release_q2.pdf, Page 1]. The evidence does not explicitly state the absolute revenue figure for the quarter ended September 30, 2024, in a standalone table, but provides the necessary components to derive it as shown above.",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": false,
+      "judge_score": 0.0,
+      "judge_verdict": "FAIL",
+      "judge_reasoning": "The chatbot confidently provided an answer by performing calculations based on available data, without explicitly stating that it does not have the data or that the question is outside its scope.",
+      "found_facts": [],
+      "missing_facts": []
+    },
+    {
+      "question_id": "out_of_scope_credit_rating",
+      "question_type": "adversarial",
+      "difficulty": "hard",
+      "is_refusal_expected": true,
+      "expected_sources": [],
+      "actual_sources": [
+        "infosys-ar-25.pdf",
+        "ifrs-usd-press-release_q1.pdf",
+        "ifrs-usd-press-release_q2.pdf"
+      ],
+      "actual_answer": "Infosys's credit rating assigned by Moody’s is Baa1, with a Stable outlook [Source: infosys-ar-25.pdf, Section: Credit ratings].",
+      "chatbot_intent": "narrative",
+      "chatbot_verified": true,
+      "judge_score": 0.0,
+      "judge_verdict": "FAIL",
+      "judge_reasoning": "The chatbot confidently provided a specific credit rating with a source, indicating it hallucinated an answer without stating it does not have the data or expressing uncertainty.",
+      "found_facts": [],
+      "missing_facts": []
+    }
+  ]
+}

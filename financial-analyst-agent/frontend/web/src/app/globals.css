@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base:     #050a14;
+  --bg-surface:  #0d1626;
+  --bg-raised:   #111f35;
+  --bg-overlay:  #16253d;
+  --border:      rgba(255, 255, 255, 0.07);
+  --border-md:   rgba(255, 255, 255, 0.12);
+  --accent-blue: #3b82f6;
+  --accent-violet: #8b5cf6;
+  --accent-teal: #2dd4bf;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Custom scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ── Gradient text utility ───────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-border {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  background-image: linear-gradient(var(--bg-raised), var(--bg-raised)),
+                    linear-gradient(135deg, rgba(59,130,246,0.4), rgba(139,92,246,0.4));
+  background-origin: border-box;
+}
+
+/* ── Glow effects ────────────────────────────────────────────── */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 40px rgba(59, 130, 246, 0.05);
+}
+.glow-sm {
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+/* ── Message prose overrides ─────────────────────────────────── */
+.message-prose {
+  line-height: 1.65;
+}
+
+.message-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  margin: 0.75rem 0;
+}
+
+.message-prose th {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.25);
+  white-space: nowrap;
+}
+
+.message-prose td {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+}
+
+.message-prose tr:last-child td {
+  border-bottom: none;
+}
+
+.message-prose tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.message-prose code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.message-prose pre {
+  background: #0d1626;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.message-prose pre code {
+  background: transparent;
+  color: #e2e8f0;
+  padding: 0;
+}
+
+.message-prose strong {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.message-prose ul, .message-prose ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.message-prose li {
+  margin: 0.2rem 0;
+  color: #cbd5e1;
+}
+
+.message-prose h1, .message-prose h2, .message-prose h3 {
+  color: #e2e8f0;
+  font-weight: 600;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.message-prose p {
+  margin: 0.4rem 0;
+  color: #cbd5e1;
+}
+
+/* ── Typing dots animation ───────────────────────────────────── */
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%           { transform: translateY(-5px); opacity: 1; }
+}
+
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #60a5fa;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Progress step pulse ─────────────────────────────────────── */
+@keyframes stepPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+.step-pulse { animation: stepPulse 1.5s ease-in-out infinite; }
